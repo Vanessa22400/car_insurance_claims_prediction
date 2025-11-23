@@ -22,7 +22,7 @@ The dataset contains 10,000 customers and several features about:
 
 The target variable is:
 
-* **outcome**: 1 if the customer made a claim, 0 otherwise.
+* `outcome`: 1 if the customer made a claim, 0 otherwise.
 
 Examples of features in the dataset:
 
@@ -38,14 +38,14 @@ Examples of features in the dataset:
 * past_accidents
 * and others.
 
-The column id was removed because it does not help with prediction.
+The column `id` was removed because it does not help with prediction.
 
 
 ### Data Preparation
 
 The following steps were performed before modeling:
 
-* Missing values in 'credit_score' and 'annual_mileage' were replaced with the mean of each column.
+* Missing values in `credit_score` and `annual_mileage` were replaced with the mean of each column.
 * All other variables were kept as they were.
 * A logistic regression model was trained for each feature separately.
 
@@ -66,11 +66,8 @@ The feature with the highest accuracy was selected as the best predictor.
 
 ### Results
 
-The feature that produced the best accuracy was:
-
-**driving_experience**
-
-**Accuracy: 0.7771**
+* the feature that produced the best accuracy was `driving_experience`
+* with an accuracy of **0.7771**
 
 This result makes sense, because drivers with less experience often have a higher chance of being involved in accidents, which increases the likelihood of making a claim.
 

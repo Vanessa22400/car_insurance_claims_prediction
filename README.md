@@ -1,17 +1,20 @@
-# Car Insurance Claim Prediction — Single Feature Logistic Models
+# Car Insurance Claim Prediction 
 
 ### Project Overview
 
-Insurance companies need to estimate risk correctly in order to price their products well.
+Insurance companies need to estimate risk correctly in order to price their products well and prevent financial losses.
 
-In this project, the insurance company **On the Road Insurance** asked for a simple machine learning solution to help them identify which single feature is the best predictor of whether a customer will make a claim during the policy period.
+In this project, I built 2 baseline machine learning models to predict whether a customer will file an insurance claim during the policy period of an insurance company. 
 
-Because the company does not have much experience with machine learning or deployment, **the goal was**:
-> to build one logistic regression model for each feature, compare the results, and select the feature that gives the highest accuracy.
+The final objective was:
 
-This repository includes the data analysis, data cleaning steps, model creation, and final results.
+**Compare Logistic Regression and Random Forest to identify which model performs better for this classification task.**
 
-### Dataset
+This repository includes the full pipeline: exploration, preprocessing, encoding, model training, and evaluation.
+
+---
+
+## Dataset
 
 The dataset contains 10,000 customers and several features about:
 
@@ -20,11 +23,13 @@ The dataset contains 10,000 customers and several features about:
 * vehicle information
 * past incidents
 
-The target variable is:
+### Target Variable
 
-* `outcome`: 1 if the customer made a claim, 0 otherwise.
+* `outcome`
+    * 1 if the customer made a claim
+    * 0 if the customer do not made a claim
 
-Examples of features in the dataset:
+### Example Features
 
 * age
 * gender
@@ -36,19 +41,32 @@ Examples of features in the dataset:
 * vehicle_type
 * speeding_violations
 * past_accidents
-* and others.
+* married  
+* children  
+* vehicle_year 
 
 The column `id` was removed because it does not help with prediction.
 
+---
 
-### Data Preparation
+## Data Preparation
 
 The following steps were performed before modeling:
 
-* Missing values in `credit_score` and `annual_mileage` were replaced with the mean of each column.
-* All other variables were kept as they were.
-* A logistic regression model was trained for each feature separately.
+1. **Handling Missing Values**  
+   - Missing values in **credit_score** and **annual_mileage** were replaced using the **mean**.
 
+2. **Encoding Categorical Variables**  
+   - Used `pandas.get_dummies()` to convert categorical variables into numerical format.
+
+3. **Train-Test Split**  
+   - 80% training  
+   - 20% testing  
+
+4. **Feature Selection**  
+   - All columns (except `id` and `outcome`) were used as inputs.
+
+---
 
 ### Modeling Approach
 
@@ -64,67 +82,83 @@ For every model, accuracy was calculated using the confusion matrix.
 The feature with the highest accuracy was selected as the best predictor.
 
 
-### Results
+## Results
 
-* the feature that produced the best accuracy was `driving_experience`
-* with an accuracy of **0.7771**
+### Accuracy
 
-This result makes sense, because drivers with less experience often have a higher chance of being involved in accidents, which increases the likelihood of making a claim.
+| Model                | Accuracy |
+|---------------------|-----------|
+| Logistic Regression | **0.803** |
+| Random Forest       | **0.823** |
 
+### Interpretation
 
+#### Logistic Regression
+- Strong performance for class **0** (no claim).  
+- Lower recall for class **1**, meaning it **misses some claim cases**.
+
+#### Random Forest
+- Best model overall, with higher recall for class **1**, which is important for not missing potential claims.  
+- More balanced results across all metrics.
+
+### Conclusion
+
+**Random Forest outperformed Logistic Regression**, achieving the highest accuracy and capturing more true claim cases.  
+Logistic Regression remains a useful and interpretable baseline.
+
+---
 
 ### How to Run the Code
 
 ```python
 import pandas as pd
 import numpy as np
-from statsmodels.formula.api import logit
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
 # Load dataset
-car = pd.read_csv('car_insurance.csv')
+car = pd.read_csv("car_insurance.csv")
 
-# Replace missing values
-car['credit_score'].fillna(car['credit_score'].mean(), inplace=True)
-car['annual_mileage'].fillna(car['annual_mileage'].mean(), inplace=True)
+# Handle missing values
+car["credit_score"].fillna(car["credit_score"].mean(), inplace=True)
+car["annual_mileage"].fillna(car["annual_mileage"].mean(), inplace=True)
 
-# Select features
-features_cols = car.columns.drop(["outcome", "id"])
+# Remove id column
+car = car.drop("id", axis=1)
 
-# Train logistic models
-models = []
-for col in features_cols:
-    model = logit(f"outcome ~ {col}", data=car).fit(disp=0)
-    models.append(model)
+# Encode categorical variables
+car_encoded = pd.get_dummies(car, drop_first=True)
 
-# Compute accuracy
-accuracy = []
-for i in range(len(models)):
-    table = models[i].pred_table()
-    tn, fp, fn, tp = table.ravel()
-    accuracy.append((tp + tn) / (tp + tn + fp + fn))
+# Train-test split
+X = car_encoded.drop("outcome", axis=1)
+y = car_encoded["outcome"]
 
-# Best feature
-best_feature = features_cols[np.argmax(accuracy)]
-best_accuracy = max(accuracy)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.20, random_state=42)
 
-print(best_feature, best_accuracy)
+# Logistic Regression
+log_model = LogisticRegression(max_iter=1000, solver="liblinear")
+log_model.fit(X_train, y_train)
+
+# Random Forest
+rf_model = RandomForestClassifier(n_estimators=200, random_state=42)
+rf_model.fit(X_train, y_train)
+
+# Predictions
+log_preds = log_model.predict(X_test)
+rf_preds = rf_model.predict(X_test)
+
+# Metrics
+print("Logistic Regression Accuracy:", accuracy_score(y_test, log_preds))
+print("Random Forest Accuracy:", accuracy_score(y_test, rf_preds))
+
+print(confusion_matrix(y_test, log_preds))
+print(confusion_matrix(y_test, rf_preds))
+
+print(classification_report(y_test, log_preds))
+print(classification_report(y_test, rf_preds))
 ```
-
-
-
-### Conclusion
-
-This project shows a simple method to find the most important single feature for predicting car insurance claims.
-By training 1 logistic model per feature, we identified **'driving_experience' as the strongest predictor**.
-
-> This approach is useful for companies that are just starting to use machine learning and want a model that is easy to understand and deploy.
-
-
-### Possible Future Improvements
-
-Some possible next steps include:
-* Using multiple features in the same model
-* Testing other algorithms such as Random Forest or Gradient Boosting
-* Applying cross-validation
-* Analyzing feature importance
-* Building a small API for deployment

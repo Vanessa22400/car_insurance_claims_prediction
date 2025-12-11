@@ -28,15 +28,21 @@ The target variable is:
 ## 3. Methods
 
 The project includes the following steps:
-1. Data loading and inspection
-2. Cleaning missing values
-3. Encoding categorical variables
-4. Exploratory analysis to understand distributions
-5. Training two baseline models:
-- Logistic Regression
-- Random Forest
-6. Comparing metrics
-- Focus on **accuracy** and **recall**, since the goal is to detect more claim cases.
+
+**1. Data loading and inspection**
+
+**2. Cleaning missing values**
+
+**3. Encoding categorical variables**
+
+**4. Exploratory analysis to understand distributions**
+
+**5. Training two baseline models**
+* Logistic Regression
+* Random Forest
+  
+**6. Comparing metrics**
+* Focus on **accuracy** and **recall**, since the goal is to detect more claim cases.
 
 ## 4. Models Tested
 

@@ -1,164 +1,71 @@
-# Predicting Car Insurance Claims with Machine Learning
+# Car Insurance Claim Prediction
 
-### Project Overview
+This project uses machine learning to predict whether a car insurance customer is likely to file a claim.
+It follows a simple end-to-end workflow: cleaning the dataset, exploring patterns, training models, and comparing their performance.
 
-Insurance companies need to estimate risk correctly in order to price their products well and prevent financial losses.
+## 1. Project Overview
 
-In this project, I built 2 baseline machine learning models to predict whether a customer will file an insurance claim during the policy period of an insurance company. 
+The goal is to build a predictive model that helps insurance companies identify customers with a higher probability of filing a claim.
+The dataset contains demographic and vehicle-related information.
 
-The final objective was:
+This project is meant to be **clear**, **simple**, and **practical**, focusing on essential steps used in real data science work.
 
-**Compare Logistic Regression and Random Forest to identify which model performs better for this classification task.**
+## 2. Dataset
 
-This repository includes the full pipeline: exploration, preprocessing, encoding, model training, and evaluation.
+The dataset includes features such as:
 
----
+* Age
+* Gender
+* Driving Experience
+* Annual Mileage
+* Vehicle Type
+* Income Category
+* Number of previous accidents
 
-## Dataset
+The target variable is:
+* **Claim*  — whether the customer filed a claim (Yes/No)
 
-The dataset contains 10,000 customers and several features about:
+## 3. Methods
 
-* personal information
-* driving history
-* vehicle information
-* past incidents
+The project includes the following steps:
+1. Data loading and inspection
+2. Cleaning missing values
+3. Encoding categorical variables
+4. Exploratory analysis to understand distributions
+5. Training two baseline models:
+- Logistic Regression
+- Random Forest
+6. Comparing metrics
+- Focus on **accuracy** and **recall**, since the goal is to detect more claim cases.
 
-### Target Variable
+## 4. Models Tested
 
-* `outcome`
-    * 1 if the customer made a claim
-    * 0 if the customer do not made a claim
+#### **Logistic Regression**
 
-### Example Features
+A simple and fast baseline model.
+It gives a basic understanding of how well linear separation works for this problem.
 
-* age
-* gender
-* driving_experience
-* education
-* income
-* credit_score
-* annual_mileage
-* vehicle_type
-* speeding_violations
-* past_accidents
-* married  
-* children  
-* vehicle_year 
+#### **Random Forest**
 
-The column `id` was removed because it does not help with prediction.
+A more flexible and powerful model that handles non-linear patterns and interactions between features.
 
----
+## 5. Results
 
-## Data Preparation
+Both models performed reasonably well, but:
+**Random Forest performed better overall.**
+* Higher recall, meaning it caught more of the true claim cases
+* Good accuracy, without losing too much performance on normal customers
+Logistic Regression still serves as a useful baseline.
 
-The following steps were performed before modeling:
+## 6. Main Conclusion
 
-1. **Handling Missing Values**  
-   - Missing values in **credit_score** and **annual_mileage** were replaced using the **mean**.
+** Random Forest is the better model for this dataset**, offering a stronger balance between accuracy and recall.
+It is more reliable for identifying customers who are likely to file a claim.
 
-2. **Encoding Categorical Variables**  
-   - Used `pandas.get_dummies()` to convert categorical variables into numerical format.
+## 7. Future Improvements
 
-3. **Train-Test Split**  
-   - 80% training  
-   - 20% testing  
-
-4. **Feature Selection**  
-   - All columns (except `id` and `outcome`) were used as inputs.
-
----
-
-### Modeling Approach
-
-The goal was to see which individual feature predicts the target variable the best.
-
-For each feature, a logistic regression was fitted using the formula:
-
-```python
-outcome ~ feature
-```
-
-For every model, accuracy was calculated using the confusion matrix.
-The feature with the highest accuracy was selected as the best predictor.
-
-
-## Results
-
-### Accuracy
-
-| Model                | Accuracy |
-|---------------------|-----------|
-| Logistic Regression | **0.803** |
-| Random Forest       | **0.823** |
-
-### Interpretation
-
-#### Logistic Regression
-- Strong performance for class **0** (no claim).  
-- Lower recall for class **1**, meaning it **misses some claim cases**.
-
-#### Random Forest
-- Best model overall, with higher recall for class **1**, which is important for not missing potential claims.  
-- More balanced results across all metrics.
-
-### Conclusion
-
-**Random Forest outperformed Logistic Regression**, achieving the highest accuracy and capturing more true claim cases.  
-Logistic Regression remains a useful and interpretable baseline.
-
----
-
-### How to Run the Code
-
-```python
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-
-# Load dataset
-car = pd.read_csv("car_insurance.csv")
-
-# Handle missing values
-car["credit_score"].fillna(car["credit_score"].mean(), inplace=True)
-car["annual_mileage"].fillna(car["annual_mileage"].mean(), inplace=True)
-
-# Remove id column
-car = car.drop("id", axis=1)
-
-# Encode categorical variables
-car_encoded = pd.get_dummies(car, drop_first=True)
-
-# Train-test split
-X = car_encoded.drop("outcome", axis=1)
-y = car_encoded["outcome"]
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.20, random_state=42)
-
-# Logistic Regression
-log_model = LogisticRegression(max_iter=1000, solver="liblinear")
-log_model.fit(X_train, y_train)
-
-# Random Forest
-rf_model = RandomForestClassifier(n_estimators=200, random_state=42)
-rf_model.fit(X_train, y_train)
-
-# Predictions
-log_preds = log_model.predict(X_test)
-rf_preds = rf_model.predict(X_test)
-
-# Metrics
-print("Logistic Regression Accuracy:", accuracy_score(y_test, log_preds))
-print("Random Forest Accuracy:", accuracy_score(y_test, rf_preds))
-
-print(confusion_matrix(y_test, log_preds))
-print(confusion_matrix(y_test, rf_preds))
-
-print(classification_report(y_test, log_preds))
-print(classification_report(y_test, rf_preds))
-```
+Some ideas to make the model stronger:
+* Try additional models (Gradient Boosting, XGBoost)
+* Tune hyperparameters
+* Feature engineering (grouping age ranges, income bins, etc.)
+* Test balancing methods if the classes are uneven
